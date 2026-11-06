@@ -8,4 +8,5 @@ node_modules/
 source-textures/
 *.zip
 *.blend
+/untitled.fbx
 .DS_Store

@@ -105,8 +105,11 @@ function serveStatic(req, res, pathname) {
   let rel;
   try { rel = decodeURIComponent(pathname); } catch { return sendJson(res, 400, { error: 'Bad path' }); }
   if (rel.endsWith('/')) rel += 'index.html';
-  const file = path.normalize(path.join(PUBLIC_DIR, rel));
-  if (!file.startsWith(PUBLIC_DIR + path.sep)) return sendJson(res, 403, { error: 'Forbidden' });
+  // Uploaded product photos may live outside public/ (persistent volume) – see UPLOAD_DIR
+  const custom = process.env.UPLOAD_DIR && rel.startsWith('/uploads/');
+  const baseDir = custom ? UPLOAD_DIR : PUBLIC_DIR;
+  const file = path.normalize(path.join(baseDir, custom ? rel.slice('/uploads/'.length) : rel));
+  if (!file.startsWith(baseDir + path.sep)) return sendJson(res, 403, { error: 'Forbidden' });
   fs.stat(file, (err, st) => {
     if (!err && st.isDirectory()) { res.writeHead(301, { Location: pathname + '/' }); return res.end(); }
     if (err || !st.isFile()) { res.writeHead(404, { 'Content-Type': 'text/plain' }); return res.end('Not found'); }
@@ -319,7 +322,8 @@ async function handleCall(req, res) {
 // ---------------------------------------------------------------- admin API
 const adminSessions = new Map(); // token → expiry
 const PROMPT_FILE = path.join(__dirname, 'config', 'assistant-prompt.md');
-const UPLOAD_DIR = path.join(PUBLIC_DIR, 'uploads');
+// UPLOAD_DIR can point at a persistent volume (e.g. /data/uploads on Railway). Default: public/uploads
+const UPLOAD_DIR = process.env.UPLOAD_DIR ? path.resolve(process.env.UPLOAD_DIR) : path.join(PUBLIC_DIR, 'uploads');
 
 function isAdmin(req) {
   const t = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
