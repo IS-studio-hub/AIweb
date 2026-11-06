@@ -1,15 +1,15 @@
 {
-  "name": "farq-site",
+  "name": "aiweb",
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "FARQ \u2013 AI chat (text + voice), 3D gaze-tracking character and live AI phone calls (no dependencies)",
+  "description": "FARQ – AI chat (text + voice), 3D gaze-tracking character and live AI phone calls (no dependencies)",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js"
   },
   "engines": {
-    "node": ">=20"
+    "node": "22.x"
   }
 }
