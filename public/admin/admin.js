@@ -1,3 +1,4 @@
+const API = String(window.AIWEB_API || '').replace(/\/+$/, '');
 // FARQ admin dashboard
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -16,7 +17,7 @@ function toast(msg) {
 }
 
 async function api(path, { method = 'GET', body } = {}) {
-  const res = await fetch(`/api/admin/${path}`, {
+  const res = await fetch(`${API}/api/admin/${path}`, {
     method,
     headers: { Authorization: `Bearer ${token}`, ...(body ? { 'Content-Type': 'application/json' } : {}) },
     body: body ? JSON.stringify(body) : undefined,
@@ -33,7 +34,7 @@ $('#loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   $('#loginErr').hidden = true;
   try {
-    const r = await fetch('/api/admin/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: e.target.password.value }) });
+    const r = await fetch(API + '/api/admin/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: e.target.password.value }) });
     const d = await r.json();
     if (!r.ok) throw new Error(d.error || 'Could not sign in');
     token = d.token; sessionStorage.setItem('farq.admin', token);

@@ -20,12 +20,12 @@ const num = (k, d) => (params.has(k) ? parseFloat(params.get(k)) : d);
 const DEG = Math.PI / 180;
 
 const CFG = {
-  model: '/models/character.fbx',
+  model: './models/character.fbx',
   textures: {
-    map: '/models/textures/basecolor.jpg',
-    normal: '/models/textures/normal.jpg',
-    roughness: '/models/textures/roughness.jpg',
-    eyeMask: '/models/textures/eye_mask.png',
+    map: './models/textures/basecolor.jpg',
+    normal: './models/textures/normal.jpg',
+    roughness: './models/textures/roughness.jpg',
+    eyeMask: './models/textures/eye_mask.png',
   },
   // Iris centres located on the mesh (FBX geometry space) by mapping the
   // painted iris pixels in the UV layout back onto the triangles.
@@ -79,7 +79,7 @@ export async function createCharacter(container, { onProgress } = {}) {
   // The FBX references absolute texture paths from the author's machine;
   // swallow them – we build our own material below.
   const blankPixel = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=';
-  manager.setURLModifier((url) => (/\.(png|jpe?g|tga|tif)$/i.test(url) && !url.includes('/models/textures/') ? blankPixel : url));
+  manager.setURLModifier((url) => (/\.(png|jpe?g|tga|tif)$/i.test(url) && !url.includes('./models/textures/') ? blankPixel : url));
 
   const texLoader = new THREE.TextureLoader(manager);
   const loadTex = (url, srgb) =>

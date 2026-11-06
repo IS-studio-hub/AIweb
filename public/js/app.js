@@ -1,3 +1,4 @@
+const API = String(window.AIWEB_API || '').replace(/\/+$/, '');
 import { createCharacter } from './character.js';
 
 // ================================================================ 3D stage
@@ -123,7 +124,7 @@ async function sendToAssistant(text) {
   const { li, bubble } = typingBubble();
   let answer = '', gotEvent = false;
   try {
-    const res = await fetch('/api/chat', {
+    const res = await fetch(API + '/api/chat', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sid, messages: chatLog.slice(-24) }),
     });
@@ -152,7 +153,7 @@ async function sendToAssistant(text) {
     else { chatLog.push({ role: 'assistant', content: answer.trim() }); saveLog(); }
   } catch (err) {
     li.classList.add('msg--error');
-    bubble.textContent = `Sorry — ${err.message}`;
+    bubble.textContent = /failed to fetch|load failed|networkerror/i.test(err.message) ? 'Sorry — the chat server isn’t reachable right now. Please try again in a moment.' : `Sorry — ${err.message}`;
   } finally {
     busy = false; setStatus('Online'); autosize();
   }
@@ -268,7 +269,7 @@ function productCard(p) {
       return;
     }
     addBtn.disabled = true; addBtn.textContent = 'Adding…';
-    const res = await fetch('/api/cart', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sid, action: 'add', productId: p.id, color, size, qty: 1 }) });
+    const res = await fetch(API + '/api/cart', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sid, action: 'add', productId: p.id, color, size, qty: 1 }) });
     const data = await safeJson(res);
     if (!res.ok) { note.textContent = data?.error || 'Could not add.'; addBtn.disabled = false; addBtn.textContent = 'Add to bag'; return; }
     setCart(data.cart);
@@ -345,7 +346,7 @@ bagLines.addEventListener('click', async (e) => {
   const line = cart.lines.find((l) => l.lineId === b.closest('.bline').dataset.line);
   if (!line) return;
   const qty = b.dataset.q === 'rm' ? 0 : line.qty + Number(b.dataset.q);
-  const res = await fetch('/api/cart', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sid, action: 'update', lineId: line.lineId, qty }) });
+  const res = await fetch(API + '/api/cart', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sid, action: 'update', lineId: line.lineId, qty }) });
   const data = await safeJson(res);
   if (data?.cart) setCart(data.cart);
 });
@@ -363,7 +364,7 @@ $('bagCheckout').addEventListener('click', () => {
 // Store's own (Shopify) checkout: opens in a new tab with the bag already filled in.
 async function goToExternalCheckout() {
   const w = window.open('', '_blank');
-  const data = await fetch('/api/checkout-url', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sid }) }).then((r) => r.json()).catch(() => null);
+  const data = await fetch(API + '/api/checkout-url', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sid }) }).then((r) => r.json()).catch(() => null);
   if (data?.url) { if (w) w.location = data.url; else location.href = data.url; }
   else { w?.close(); addMessage('assistant', data?.error || 'Could not open checkout – please try again.', { error: true }); }
 }
@@ -415,7 +416,7 @@ coForm.addEventListener('submit', async (e) => {
   }
   coSubmit.disabled = true; coSubmit.textContent = 'Placing order…';
   try {
-    const res = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const res = await fetch(API + '/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
     const data = await safeJson(res);
     if (!res.ok) throw new Error(data?.error || 'Could not place the order.');
     LS.set('farq.customer', { name: body.customer.name, email: body.customer.email, phone: body.customer.phone, ...body.address });
@@ -443,7 +444,7 @@ function orderPlaced(order, warning) {
   const q = new URLSearchParams(location.search);
   if (!q.get('order')) return;
   window.history.replaceState(null, '', location.pathname);
-  const res = await fetch('/api/order/confirm', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ orderId: q.get('order'), token: q.get('t'), sessionId: q.get('session_id') }) });
+  const res = await fetch(API + '/api/order/confirm', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ orderId: q.get('order'), token: q.get('t'), sessionId: q.get('session_id') }) });
   const data = await safeJson(res);
   if (!data?.order) return;
   if (q.get('cancelled')) addMessage('assistant', `No worries — order ${data.order.id} is saved but not paid yet. Message me if you'd like to finish it.`);
@@ -506,7 +507,7 @@ async function sendVoice(blob) {
   const userMsg = addMessage('user', '…', { meta: `${icons.mic} Voice` });
   const { li, bubble } = typingBubble();
   try {
-    const res = await fetch('/api/voice', {
+    const res = await fetch(API + '/api/voice', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sid, audio: await blobToBase64(blob), mimeType: blob.type, messages: chatLog.slice(-24) }),
     });
@@ -596,7 +597,7 @@ callForm.addEventListener('submit', async (e) => {
   }
   callSubmit.disabled = true; callSubmit.querySelector('.btn__label').textContent = 'Connecting…';
   try {
-    const res = await fetch('/api/call', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ firstName: f.firstName.value.trim(), lastName: f.lastName.value.trim(), email: f.email.value.trim(), phone }) });
+    const res = await fetch(API + '/api/call', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ firstName: f.firstName.value.trim(), lastName: f.lastName.value.trim(), email: f.email.value.trim(), phone }) });
     const data = await safeJson(res);
     if (!res.ok) throw new Error(data?.error || 'Could not start the call.');
     $('callingText').textContent = `We’re calling ${phone}. Pick up and ask anything.`;
@@ -608,8 +609,8 @@ callForm.addEventListener('submit', async (e) => {
 // ================================================================ boot
 (async () => {
   const [info, c] = await Promise.all([
-    fetch('/api/store').then((r) => r.json()).catch(() => null),
-    fetch(`/api/cart?sid=${encodeURIComponent(sid)}`).then((r) => r.json()).catch(() => null),
+    fetch(API + '/api/store').then((r) => r.json()).catch(() => null),
+    fetch(`${API}/api/cart?sid=${encodeURIComponent(sid)}`).then((r) => r.json()).catch(() => null),
   ]);
   if (info) Object.assign(store, info);
   if (store.knowledgeOnly && !store.remoteCatalog) { bagBtn.hidden = true; bagBtn.style.display = 'none'; }

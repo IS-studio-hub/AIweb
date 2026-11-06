@@ -490,6 +490,17 @@ async function handleAdmin(req, res, pathname, method) {
 const server = http.createServer(async (req, res) => {
   const { pathname } = new URL(req.url, 'http://x');
   const method = req.method;
+  // CORS – lets a static copy of the site (e.g. GitHub Pages) talk to this server.
+  const origin = req.headers.origin;
+  const allowed = (process.env.ALLOWED_ORIGINS || '').split(',').map((x) => x.trim().replace(/\/+$/, '')).filter(Boolean);
+  if (origin && pathname.startsWith('/api/') && (allowed.includes('*') || allowed.includes(origin))) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Max-Age', '600');
+    if (method === 'OPTIONS') { res.writeHead(204); return res.end(); }
+  }
   try {
     if (pathname.startsWith('/api/admin/')) return await handleAdmin(req, res, pathname, method);
     if (pathname.startsWith('/api/')) {
