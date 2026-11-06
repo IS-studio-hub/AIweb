@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Ask us anything</title>
+  <meta name="description" content="Ask us anything — by text, by voice, or get a call back." />
+  <link rel="stylesheet" href="/css/styles.css?v=12" />
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "/vendor/three/build/three.module.js",
+        "three/addons/": "/vendor/three/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <main class="split">
+    <!-- LEFT: shopping chat -->
+    <section class="panel chat" aria-label="Talk to your FARQ skincare advisor">
+      <header class="chat__header">
+        <div class="brand">
+          <span class="brand__mark" aria-hidden="true"></span>
+          <span class="brand__name" data-store-name>FARQ</span>
+        </div>
+        <div class="chat__actions">
+          <div class="status"><span class="status__dot"></span><span class="status__text">Online</span></div>
+          <button class="newchat" id="newChatBtn" type="button" title="Start a new conversation">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4.5h4.5"/></svg>
+            <span>New chat</span>
+          </button>
+          <button class="bagbtn" id="bagBtn" type="button" aria-label="Open bag" aria-controls="bag">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
+            <span class="bagbtn__count" id="bagCount" hidden>0</span>
+          </button>
+        </div>
+      </header>
+
+      <div class="chat__scroll" id="scroll">
+        <div class="intro" id="intro">
+          <p class="eyebrow"><span data-store-name>Lonely Ghost</span> · Your assistant</p>
+          <h1>Hey, I’m <span data-assistant-name>Max</span>.</h1>
+          <p class="lede">Ask me anything about <span data-store-name>Lonely Ghost</span>. Type, or tap the mic and just talk.</p>
+          <div class="chips" id="chips">
+            <button class="chip" type="button">What do you offer?</button>
+            <button class="chip" type="button">Tell me your story</button>
+            <button class="chip" type="button">How can I get in touch?</button>
+            <button class="chip" type="button" data-action="call">Can someone call me?</button>
+          </div>
+        </div>
+        <ol class="messages" id="messages" aria-live="polite"></ol>
+      </div>
+
+      <form class="composer" id="composer" autocomplete="off">
+        <div class="composer__box" id="composerBox">
+          <textarea id="input" rows="1" placeholder="Ask me anything…" aria-label="Your message"></textarea>
+          <div class="recorder" id="recorder" hidden>
+            <span class="recorder__dot"></span>
+            <canvas class="recorder__wave" id="wave" width="600" height="56"></canvas>
+            <span class="recorder__time" id="recTime">0:00</span>
+          </div>
+          <button class="iconbtn mic" id="micBtn" type="button" aria-label="Ask by voice" title="Ask by voice">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3.5 3.5 0 0 0 3.5-3.5v-5a3.5 3.5 0 1 0-7 0v5A3.5 3.5 0 0 0 12 15Z"/><path d="M18.5 11.5a6.5 6.5 0 0 1-13 0M12 18v3"/></svg>
+          </button>
+          <button class="iconbtn send" id="sendBtn" type="submit" aria-label="Send" title="Send" disabled>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+          </button>
+        </div>
+        <p class="composer__hint" id="hint">Enter to send · Shift+Enter for a new line · Mic answers by voice</p>
+      </form>
+
+      <!-- Bag drawer -->
+      <div class="bag" id="bag" hidden>
+        <aside class="bag__panel" role="dialog" aria-label="Your bag">
+          <header class="bag__head"><h3>Your bag</h3><button class="bag__close" id="bagClose" type="button" aria-label="Close bag">×</button></header>
+          <div class="bag__lines" id="bagLines"></div>
+          <div class="bag__free" id="bagFree" hidden><span></span><div class="bar"><i></i></div></div>
+          <dl class="bag__totals">
+            <div><dt>Subtotal</dt><dd id="bagSubtotal">$0.00</dd></div>
+            <div><dt>Shipping</dt><dd id="bagShipping">—</dd></div>
+            <div class="grand"><dt>Total</dt><dd id="bagTotal">$0.00</dd></div>
+          </dl>
+          <button class="btn" id="bagCheckout" type="button" disabled>Checkout</button>
+        </aside>
+      </div>
+    </section>
+
+    <!-- RIGHT: 3D character -->
+    <section class="panel stage" aria-label="3D character">
+      <div class="stage__canvas" id="stage"></div>
+      <div class="stage__loader" id="loader"><div class="bar"><span id="loadBar"></span></div><p>Loading character…</p></div>
+      <div class="stage__caption" id="speakingBadge" hidden><span class="eq"><i></i><i></i><i></i><i></i></span> Speaking</div>
+    </section>
+  </main>
+
+  <!-- Floating call button -->
+  <button class="fab" id="callFab" type="button" aria-haspopup="dialog" aria-controls="callDialog" title="Get a call now">
+    <span class="fab__ring" aria-hidden="true"></span>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1Z"/></svg>
+    <span class="sr-only">Get a call from our AI</span>
+  </button>
+
+  <!-- Checkout -->
+  <dialog class="modal modal--wide" id="checkoutDialog" aria-labelledby="coTitle">
+    <form method="dialog" class="modal__inner" id="checkoutForm" novalidate>
+      <button class="modal__close" value="cancel" formnovalidate aria-label="Close">×</button>
+      <div class="modal__head"><h2 id="coTitle">Checkout</h2><p>Almost yours. Where should we send it?</p></div>
+      <ul class="co-summary" id="coSummary"></ul>
+      <fieldset class="co-section"><legend>Contact</legend>
+        <label class="field"><span>Full name</span><input name="name" autocomplete="name" required /></label>
+        <div class="grid2">
+          <label class="field"><span>Email</span><input name="email" type="email" autocomplete="email" required /></label>
+          <label class="field"><span>Phone (optional)</span><input name="phone" type="tel" autocomplete="tel" /></label>
+        </div>
+      </fieldset>
+      <fieldset class="co-section"><legend>Shipping address</legend>
+        <label class="field"><span>Address</span><input name="line1" autocomplete="address-line1" required /></label>
+        <label class="field"><span>Apartment, suite (optional)</span><input name="line2" autocomplete="address-line2" /></label>
+        <div class="grid2">
+          <label class="field"><span>City</span><input name="city" autocomplete="address-level2" required /></label>
+          <label class="field"><span>Province / State</span><input name="region" autocomplete="address-level1" /></label>
+        </div>
+        <div class="grid2">
+          <label class="field"><span>Postal / ZIP code</span><input name="postal" autocomplete="postal-code" required /></label>
+          <label class="field"><span>Country</span><input name="country" autocomplete="country-name" required /></label>
+        </div>
+        <label class="field"><span>Note (optional)</span><input name="note" maxlength="300" placeholder="Gift message, delivery notes…" /></label>
+      </fieldset>
+      <fieldset class="co-section"><legend>Payment</legend><div class="co-pay" id="coPay"></div></fieldset>
+      <p class="form__error" id="coError" role="alert" hidden></p>
+      <button class="btn" id="coSubmit" type="submit" value="default">Place order</button>
+      <p class="co-secure">🔒 Card details are entered on Stripe’s secure page — never in this chat.</p>
+    </form>
+  </dialog>
+
+  <!-- Call-me dialog -->
+  <dialog class="modal" id="callDialog" aria-labelledby="callTitle">
+    <form method="dialog" class="modal__inner" id="callForm" novalidate>
+      <button class="modal__close" value="cancel" formnovalidate aria-label="Close">×</button>
+      <div class="modal__head">
+        <span class="modal__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1Z"/></svg>
+        </span>
+        <h2 id="callTitle">Talk to us — live</h2>
+        <p>Leave your details and we’ll call you within seconds. Ask anything; you’ll get answers in real time.</p>
+      </div>
+      <div class="grid2">
+        <label class="field"><span>First name</span><input name="firstName" required autocomplete="given-name" /></label>
+        <label class="field"><span>Last name</span><input name="lastName" required autocomplete="family-name" /></label>
+      </div>
+      <label class="field"><span>Email</span><input name="email" type="email" required autocomplete="email" /></label>
+      <label class="field"><span>Phone number</span><input name="phone" type="tel" required autocomplete="tel" placeholder="+1 416 555 0123" /></label>
+      <label class="consent"><input type="checkbox" name="consent" required /> <span>I agree to receive an automated call from an AI assistant at this number.</span></label>
+      <p class="form__error" id="callError" role="alert" hidden></p>
+      <button class="btn" id="callSubmit" type="submit" value="default"><span class="btn__label">Call me now</span></button>
+      <div class="calling" id="callingState" hidden>
+        <div class="calling__pulse"><span></span><span></span><span></span></div>
+        <h3>Calling you now…</h3>
+        <p id="callingText">Your phone should ring in a few seconds.</p>
+        <button class="btn btn--ghost" value="cancel" formnovalidate>Done</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="module" src="/js/app.js?v=12"></script>
+</body>
+</html>

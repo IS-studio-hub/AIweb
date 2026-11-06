@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>FARQ Admin</title>
+  <link rel="stylesheet" href="/admin/admin.css?v=2" />
+</head>
+<body>
+  <!-- Login -->
+  <section class="login" id="login">
+    <form class="login__box" id="loginForm">
+      <div class="brand"><span class="brand__mark"></span>FARQ <small>Admin</small></div>
+      <label class="field"><span>Password</span><input type="password" name="password" autocomplete="current-password" autofocus required /></label>
+      <p class="err" id="loginErr" hidden></p>
+      <button class="btn" type="submit">Sign in</button>
+      <p class="hint">The password is <code>ADMIN_PASSWORD</code> in your <code>.env</code> file.</p>
+    </form>
+  </section>
+
+  <!-- App -->
+  <div class="app" id="app" hidden>
+    <aside class="side">
+      <div class="brand"><span class="brand__mark"></span>FARQ <small>Admin</small></div>
+      <nav class="nav" id="nav">
+        <button data-view="overview" class="on"><svg viewBox="0 0 24 24"><path d="M4 13h6V4H4v9Zm0 7h6v-5H4v5Zm10 0h6v-9h-6v9Zm0-16v5h6V4h-6Z"/></svg>Overview</button>
+        <button data-view="orders"><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>Orders <span class="pill" id="navToShip" hidden></span></button>
+        <button data-view="products"><svg viewBox="0 0 24 24"><path d="M8 4 4 7l2 4 2-1v10h8V10l2 1 2-4-4-3c-1 1.5-2.4 2-4 2s-3-.5-4-2Z"/></svg>Products</button>
+        <button data-view="settings"><svg viewBox="0 0 24 24"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>Store &amp; AI</button>
+        <button data-view="leads"><svg viewBox="0 0 24 24"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1Z"/></svg>Call requests</button>
+      </nav>
+      <div class="side__foot">
+        <a href="/" target="_blank" rel="noopener">Open store ↗</a>
+        <button id="logout" type="button">Sign out</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <!-- Overview -->
+      <section class="view" id="view-overview">
+        <header class="vhead"><h1>Overview</h1><span class="muted" id="ovUpdated"></span></header>
+        <div class="banner" id="sampleBanner" hidden>Your catalog still has <b>sample products</b>. Replace them with real items in <a href="#" data-goto="products">Products</a>.</div>
+        <div class="banner" id="photoBanner" hidden>Some products still use <b>illustrations</b> instead of real photos. Open each one in <a href="#" data-goto="products">Products</a> and upload the real product photo.</div>
+        <div class="kpis" id="kpis"></div>
+        <div class="grid2">
+          <div class="card"><h3>Orders to ship</h3><div id="ovToShip"></div></div>
+          <div class="card"><h3>Top products</h3><div id="ovTop"></div><h3 style="margin-top:18px">Low stock</h3><div id="ovLow"></div></div>
+        </div>
+      </section>
+
+      <!-- Orders -->
+      <section class="view" id="view-orders" hidden>
+        <header class="vhead"><h1>Orders</h1>
+          <div class="tools">
+            <input type="search" id="orderSearch" placeholder="Search name, email, order #" />
+            <div class="seg" id="orderFilter">
+              <button data-s="open" class="on">To ship</button><button data-s="shipped">Shipped</button><button data-s="delivered">Delivered</button><button data-s="cancelled">Cancelled</button><button data-s="all">All</button>
+            </div>
+          </div>
+        </header>
+        <div class="split2">
+          <div class="card card--flush"><table class="tbl" id="orderTable"><thead><tr><th>Order</th><th>Date</th><th>Customer</th><th>Total</th><th>Payment</th><th>Status</th></tr></thead><tbody></tbody></table><p class="empty" id="orderEmpty" hidden>No orders here yet.</p></div>
+          <div class="card detail" id="orderDetail"><p class="empty">Select an order to see details and ship it.</p></div>
+        </div>
+      </section>
+
+      <!-- Products -->
+      <section class="view" id="view-products" hidden>
+        <header class="vhead"><h1>Products</h1>
+          <div class="tools">
+            <a class="btn btn--ghost" href="/admin/products-template.csv" download>Download template</a>
+            <label class="btn btn--ghost" id="importBtn">Import CSV<input type="file" accept=".csv,text/csv" id="importFile" hidden /></label>
+            <button class="btn" id="newProduct" type="button">+ New product</button>
+          </div>
+        </header>
+        <div class="banner" id="remoteBanner" hidden>Products are read from your API (<code>CATALOG_API_URL</code>). Edit them there.</div>
+        <div class="pgrid" id="pgrid"></div>
+      </section>
+
+      <!-- Settings -->
+      <section class="view" id="view-settings" hidden>
+        <header class="vhead"><h1>Store &amp; AI</h1></header>
+        <div class="grid2">
+          <form class="card form" id="settingsForm">
+            <h3>Store info <small class="muted">— the salesperson only states these facts</small></h3>
+            <div class="row3">
+              <label class="field"><span>Store name</span><input name="storeName" /></label>
+              <label class="field"><span>Salesperson name</span><input name="assistantName" /></label>
+              <label class="field"><span>Currency</span><input name="currency" maxlength="3" placeholder="USD" /></label>
+            </div>
+            <div class="row3">
+              <label class="field"><span>Flat shipping</span><input name="flatShipping" type="number" min="0" step="0.01" /></label>
+              <label class="field"><span>Free shipping over</span><input name="freeShippingOver" type="number" min="0" step="0.01" /></label>
+              <label class="field"><span>Tax %</span><input name="taxRate" type="number" min="0" step="0.01" /></label>
+            </div>
+            <label class="check"><input type="checkbox" name="payOnDelivery" /> Allow “Pay later” orders</label>
+            <label class="field"><span>About the brand</span><textarea name="about" rows="4"></textarea></label>
+            <label class="field"><span>Policies (shipping, returns, sizing…)</span><textarea name="policies" rows="6"></textarea></label>
+            <label class="field"><span>Contact</span><textarea name="contact" rows="2"></textarea></label>
+            <div class="formfoot"><span class="saved" id="settingsSaved" hidden>Saved ✓</span><button class="btn" type="submit">Save store info</button></div>
+          </form>
+          <div class="stack">
+            <div class="card">
+              <h3>Connections</h3>
+              <ul class="conn" id="conn"></ul>
+              <p class="muted small">Swap the AI or catalog for your own API in <code>.env</code> — see README → “Use your own API”.</p>
+            </div>
+            <form class="card form" id="promptForm">
+              <h3>Salesperson playbook <small class="muted">— how the AI sells</small></h3>
+              <textarea name="prompt" rows="18" class="mono"></textarea>
+              <div class="formfoot"><span class="saved" id="promptSaved" hidden>Saved ✓</span><button class="btn" type="submit">Save playbook</button></div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- Leads -->
+      <section class="view" id="view-leads" hidden>
+        <header class="vhead"><h1>Call requests</h1></header>
+        <div class="card card--flush"><table class="tbl" id="leadTable"><thead><tr><th>When</th><th>Name</th><th>Email</th><th>Phone</th></tr></thead><tbody></tbody></table><p class="empty" id="leadEmpty" hidden>No call requests yet.</p></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Product editor -->
+  <dialog class="modal" id="productDialog">
+    <form class="modal__inner form" id="productForm" method="dialog">
+      <header class="mhead"><h2 id="pTitle">Product</h2><button class="x" value="cancel" formnovalidate>×</button></header>
+      <div class="row2">
+        <label class="field"><span>Name</span><input name="name" required /></label>
+        <label class="field"><span>Category</span><input name="category" placeholder="Hoodies, T-Shirts…" /></label>
+      </div>
+      <div class="row3">
+        <label class="field"><span>Price</span><input name="price" type="number" min="0" step="0.01" required /></label>
+        <label class="field"><span>Compare-at price (sale)</span><input name="compareAtPrice" type="number" min="0" step="0.01" /></label>
+        <label class="check check--field"><input type="checkbox" name="active" checked /> Visible in store</label>
+      </div>
+      <div class="row2">
+        <label class="field"><span>Price note <small>(e.g. “per 3 months · subscription”)</small></span><input name="priceNote" maxlength="120" /></label>
+        <label class="check check--field"><input type="checkbox" name="notForSale" /> Not sold separately (only inside kits)</label>
+      </div>
+      <label class="field"><span>Description</span><textarea name="description" rows="3"></textarea></label>
+      <label class="field"><span>Selling points <small>(one per line)</small></span><textarea name="highlights" rows="3"></textarea></label>
+      <label class="field"><span>Tags <small>(comma separated – helps the AI find it)</small></span><input name="tags" placeholder="winter, gift, bestseller" /></label>
+      <div class="field"><span>Images</span>
+        <div class="imgs" id="pImages"></div>
+        <div class="imgadd"><label class="btn btn--ghost btn--sm">Upload image<input type="file" accept="image/png,image/jpeg,image/webp,image/gif" id="pUpload" multiple hidden /></label><input id="pImgUrl" placeholder="…or paste an image URL and press Enter" /></div>
+      </div>
+      <div class="row2">
+        <label class="field"><span>Colours <small>(comma separated)</small></span><input name="colors" placeholder="Black, Sand" /></label>
+        <label class="field"><span>Sizes <small>(comma separated)</small></span><input name="sizes" placeholder="S, M, L, XL" /></label>
+      </div>
+      <div class="field"><span>Stock per variant</span><div class="stock" id="pStock"></div></div>
+      <p class="err" id="pErr" hidden></p>
+      <footer class="mfoot"><button class="btn btn--danger btn--ghost" type="button" id="pDelete">Delete</button><span></span><button class="btn btn--ghost" value="cancel" formnovalidate>Cancel</button><button class="btn" type="submit" value="save">Save product</button></footer>
+    </form>
+  </dialog>
+
+  <!-- Import preview -->
+  <dialog class="modal" id="importDialog">
+    <form class="modal__inner form" id="importForm" method="dialog">
+      <header class="mhead"><h2>Import products</h2><button class="x" value="cancel" formnovalidate>×</button></header>
+      <p class="muted" id="importSummary"></p>
+      <div class="importlist" id="importList"></div>
+      <label class="check"><input type="checkbox" name="removeSamples" checked /> Remove the sample products</label>
+      <p class="err" id="importErr" hidden></p>
+      <footer class="mfoot"><span></span><button class="btn btn--ghost" value="cancel" formnovalidate>Cancel</button><button class="btn" type="submit" value="import" id="importGo">Import</button></footer>
+    </form>
+  </dialog>
+
+  <!-- Packing slip (print only) -->
+  <div class="slip" id="slip"></div>
+
+  <script src="/admin/admin.js?v=3" type="module"></script>
+</body>
+</html>

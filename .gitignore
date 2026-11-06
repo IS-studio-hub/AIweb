@@ -1,0 +1,11 @@
+# secrets & runtime data – never commit
+.env
+data/
+uploads/
+public/uploads/
+node_modules/
+# source/working files
+source-textures/
+*.zip
+*.blend
+.DS_Store
