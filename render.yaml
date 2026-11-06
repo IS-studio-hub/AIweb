@@ -1,0 +1,32 @@
+# One-click deploy on Render: Dashboard → New → Blueprint → pick this repo.
+services:
+  - type: web
+    name: aiweb
+    runtime: node
+    plan: free
+    buildCommand: echo "no build needed"
+    startCommand: node server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: KNOWLEDGE_API_URL
+        sync: false
+      - key: KNOWLEDGE_API_KEY
+        sync: false
+      - key: KNOWLEDGE_TIMEOUT_MS
+        value: "40000"
+      - key: KNOWLEDGE_ONLY
+        value: "true"
+      - key: BRAND_NAME
+        value: Lonely Ghost
+      - key: CATALOG_API_URL
+        value: https://lonelyghost.co/products.json
+      - key: STORE_CURRENCY
+        value: USD
+      - key: ALLOWED_ORIGINS
+        value: https://is-studio-hub.github.io

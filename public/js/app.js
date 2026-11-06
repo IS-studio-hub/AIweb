@@ -153,7 +153,7 @@ async function sendToAssistant(text) {
     else { chatLog.push({ role: 'assistant', content: answer.trim() }); saveLog(); }
   } catch (err) {
     li.classList.add('msg--error');
-    bubble.textContent = /failed to fetch|load failed|networkerror/i.test(err.message) ? 'Sorry — the chat server isn’t reachable right now. Please try again in a moment.' : `Sorry — ${err.message}`;
+    bubble.textContent = /failed to fetch|load failed|networkerror|\((404|405)\)/i.test(err.message) ? 'Sorry — the chat server isn’t reachable right now. Please try again in a moment.' : `Sorry — ${err.message}`;
   } finally {
     busy = false; setStatus('Online'); autosize();
   }
